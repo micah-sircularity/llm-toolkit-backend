@@ -1,7 +1,7 @@
 "on":
     push:
         branches:
-            - patch-1
+            - porter-stack-toolkit-backend-d4251d7a
 name: Deploy to toolkit-backend
 jobs:
     porter-deploy:
