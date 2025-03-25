@@ -1,28 +1,66 @@
-version: '3.8'
+version: v2
+name: my-app
 
 services:
-  streaming-service:
-    image: streaming-service:600
+  - name: streaming-service
+    type: web
     build:
+      method: docker
       context: ./streaming_service
       dockerfile: Dockerfile
+    port: 8000
+    cpuCores: 0.2
+    ramMegabytes: 512
+    autoscaling:
+      enabled: true
+      minInstances: 1
+      maxInstances: 3
+      memoryThresholdPercent: 70
+      cpuThresholdPercent: 70
     env_file:
       - .dev.env
-    ports:
-      - "8000:8000"
+    healthCheck:
+      enabled: true
+      httpPath: /health
 
-  data-service:
-    image: data-service:600
+  - name: data-service
+    type: web
     build:
+      method: docker
       context: ./data_service
       dockerfile: Dockerfile
+    port: 8000
+    cpuCores: 0.2
+    ramMegabytes: 512
+    autoscaling:
+      enabled: true
+      minInstances: 1
+      maxInstances: 3
+      memoryThresholdPercent: 70
+      cpuThresholdPercent: 70
     env_file:
       - .dev.env
-    ports:
-      - "8001:8000"
+    healthCheck:
+      enabled: true
+      httpPath: /health
 
-  redis:
+  - name: redis
+    type: web
     image: redis:latest
-    command: redis-server --requirepass redistest123
+    run: redis-server --requirepass redistest123
+    private: true
+    cpuCores: 0.1
+    ramMegabytes: 256
     env_file:
       - .dev.env
+
+predeploy:
+  run: echo "Preparing the environment..."
+
+build:
+  method: docker
+  context: ./
+  dockerfile: ./streaming_service/Dockerfile
+
+env:
+  APP_ENV: development
