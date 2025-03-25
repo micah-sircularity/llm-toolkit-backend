@@ -1,0 +1,42 @@
+version: v2
+name: my-app
+
+services:
+  - name: streaming-service
+    type: web
+    # Build the streaming-service image from the given context and Dockerfile
+    build:
+      method: docker
+      context: ./streaming_service
+      dockerfile: Dockerfile
+    # Expose port 8000 externally which maps to container’s port 8000
+    port:
+      external: 8000
+      internal: 8000
+    # Load environment variables from .dev.env
+    env_file:
+      - .dev.env
+
+  - name: data-service
+    type: web
+    build:
+      method: docker
+      context: ./data_service
+      dockerfile: Dockerfile
+    # Map external port 8001 to container’s port 8000
+    port:
+      external: 8001
+      internal: 8000
+    env_file:
+      - .dev.env
+
+  - name: redis
+    type: web
+    # Use the published redis image instead of building one
+    image: redis:latest
+    # Override the default command with our custom redis-server command
+    run: redis-server --requirepass redistest123
+    env_file:
+      - .dev.env
+    # Mark redis as a private service since it should not be exposed publicly
+    private: true
